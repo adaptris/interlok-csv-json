@@ -7,8 +7,8 @@ import com.adaptris.annotation.InputFieldDefault;
 import com.adaptris.core.CoreException;
 import com.adaptris.core.ServiceImp;
 import com.adaptris.core.util.Args;
-import com.adaptris.csv.jdbc.BasicPreferenceBuilder;
-import com.adaptris.csv.jdbc.PreferenceBuilder;
+import com.adaptris.csv.BasicPreferenceBuilder;
+import com.adaptris.csv.PreferenceBuilder;
 
 public abstract class CSVConverter extends ServiceImp {
 
