@@ -70,7 +70,7 @@ dependencies {
   compile ("org.slf4j:slf4j-api:$slf4jVersion")
   compile ("com.adaptris:adp-simple-csv:$adpCoreVersion") { changing=true}
   compile ("com.adaptris:adp-json:$adpCoreVersion") { changing=true}
-  compile ("com.fasterxml.jackson.core:jackson-databind:2.7.0")
+  compile ("com.fasterxml.jackson.core:jackson-databind:2.8.10")
 
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:adp-stubs:$adpCoreVersion") { changing= true}
