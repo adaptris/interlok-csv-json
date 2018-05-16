@@ -58,6 +58,13 @@ configurations {
   all*.exclude group: 'net.sf.saxon', module: 'saxon'
   all*.exclude group: 'org.codehaus.woodstox'
   all*.exclude group: 'org.eclipse.jetty.orbit', module: 'javax.mail.glassfish'
+  all*.exclude group: 'com.fasterxml.woodstox'
+  // Remove some guava dependencies
+  all*.exclude group: 'org.codehaus.mojo', module: 'animal-sniffer-annotations'
+  all*.exclude group: 'com.google.j2objc', module: 'j2objc-annotations'
+  all*.exclude group: 'com.google.errorprone', module: 'error_prone_annotations'
+  all*.exclude group: 'org.checkerframework', module: 'checker-compat-qual'
+  all*.exclude group: 'com.google.findbugs', module: 'jsr305'
 }
 
 configurations.all {
