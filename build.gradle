@@ -133,7 +133,14 @@ javadoc {
 }
 
 jacoco {
-  toolVersion="0.8.0"
+  toolVersion="0.8.1"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -145,6 +152,8 @@ task examplesJar(type: Jar, dependsOn: test) {
   classifier = 'examples'
   from new File(buildDir, '/examples')
 }
+
+check.dependsOn jacocoTestReport
 
 artifacts {
   archives javadocJar
