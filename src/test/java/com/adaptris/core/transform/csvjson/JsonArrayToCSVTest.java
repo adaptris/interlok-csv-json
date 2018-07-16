@@ -9,6 +9,7 @@ import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.ServiceException;
 import com.jayway.jsonpath.ReadContext;
+import org.junit.Test;
 
 public class JsonArrayToCSVTest extends CsvBaseCase {
 
@@ -24,6 +25,18 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
     try (InputStream in = msg.getInputStream()){
       List<String> lines = IOUtils.readLines(in);
       assertEquals(4, lines.size());
+    }
+  }
+
+  public void testServiceIncludeHeader() throws Exception {
+    JsonArrayToCSV service = new JsonArrayToCSV();
+    service.setIncludeHeader("false");
+    AdaptrisMessage msg = AdaptrisMessageFactory.getDefaultInstance().newMessage(JSON_ARRAY_INPUT);
+    execute(service, msg);
+    System.err.println(msg.getContent());
+    try (InputStream in = msg.getInputStream()){
+      List<String> lines = IOUtils.readLines(in);
+      assertEquals(3, lines.size());
     }
   }
 
