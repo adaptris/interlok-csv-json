@@ -5,8 +5,11 @@ ext {
   repoUsername = project.hasProperty('repoUsername') ? project.getProperty('repoUsername') : 'unknown'
   repoPassword = project.hasProperty('repoPassword') ? project.getProperty('repoPassword') : 'unknown'
   defaultNexusRepo = project.hasProperty('defaultNexusRepo') ? project.getProperty('defaultNexusRepo') : 'https://repo1.maven.org/maven2/'
-  interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : 'https://development.adaptris.net/javadocs/latest/Interlok-API/'
-  interlokCommonJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : 'https://development.adaptris.net/javadocs/latest/Interlok-Common/'
+  javadocsBaseUrl = "https://development.adaptris.net/nexus/content/sites/javadocs/com/adaptris"
+  interlokJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-core/" + interlokCoreVersion
+  interlokCommonJavadocs= project.hasProperty('interlokJavadocs') ? project.getProperty('interlokJavadocs') : javadocsBaseUrl + "/interlok-common/" + interlokCoreVersion
+  interlokJsonJavadocs= project.hasProperty('interlokJsonJavadocs') ? project.getProperty('interlokJsonJavadocs') : javadocsBaseUrl + "/interlok-csv/" + interlokCoreVersion
+  interlokCSVJavadocs= project.hasProperty('interlokCSVJavadocs') ? project.getProperty('interlokCSVJavadocs') : javadocsBaseUrl + "/interlok-json/" + interlokCoreVersion
   componentName='Interlok/JSON+CSV conversions'
   organizationName = "Adaptris Ltd"
   organizationUrl = "http://interlok.adaptris.net"
@@ -129,6 +132,8 @@ javadoc {
       links = [
         interlokJavadocs,
         interlokCommonJavadocs,
+        interlokCSVJavadocs,
+        interlokJsonJavadocs,
       ]
     taglets = ["com.adaptris.taglet.ConfigTaglet", "com.adaptris.taglet.LicenseTaglet"]
     options.addStringOption "tagletpath", configurations.javadoc.asPath
