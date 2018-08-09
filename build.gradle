@@ -39,13 +39,6 @@ repositories {
   jcenter()
   maven { url "$defaultNexusRepo" }
   maven { url "https://development.adaptris.net/nexus/content/groups/public" }
-  maven {
-    credentials {
-      username repoUsername
-      password repoPassword
-    }
-    url "https://development.adaptris.net/nexus/content/groups/private"
-  }
   maven { url "https://development.adaptris.net/nexus/content/repositories/snapshots" }
   maven { url "https://development.adaptris.net/nexus/content/repositories/releases" }
 }
@@ -83,6 +76,7 @@ dependencies {
   compile ("com.adaptris:interlok-json:$interlokCoreVersion") { changing=true}
   compile ("com.fasterxml.jackson.core:jackson-databind:2.9.6")
 
+  annotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
   testCompile ('junit:junit:4.12')
   testCompile ("com.adaptris:interlok-stubs:$interlokCoreVersion") { changing= true}
   testCompile ("org.apache.logging.log4j:log4j-core:2.8.1")
