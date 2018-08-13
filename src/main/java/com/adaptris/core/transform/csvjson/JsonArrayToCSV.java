@@ -3,10 +3,11 @@ package com.adaptris.core.transform.csvjson;
 import java.util.ArrayList;
 import java.util.Map;
 
+import com.adaptris.annotation.*;
+import com.adaptris.core.util.Args;
+import com.adaptris.validation.constraints.BooleanExpression;
 import org.supercsv.io.CsvListWriter;
 
-import com.adaptris.annotation.AdapterComponent;
-import com.adaptris.annotation.ComponentProfile;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.ServiceException;
@@ -56,6 +57,12 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @XStreamAlias("json-to-csv")
 public class JsonArrayToCSV extends CSVConverter {
 
+  @AdvancedConfig
+  @InputFieldHint(expression = true)
+  @InputFieldDefault(value = "true")
+  @BooleanExpression
+  private String includeHeader;
+
   public JsonArrayToCSV() {
     super();
   }
@@ -72,7 +79,7 @@ public class JsonArrayToCSV extends CSVConverter {
       try (CsvListWriter csvWriter = new CsvListWriter(msg.getWriter(), getPreferenceBuilder().build())) {
         for (AdaptrisMessage m : splitter.splitMessage(msg)) {
           Map<String, String> json = JsonUtil.mapifyJson(m);
-          if (first) {
+          if (first && includeHeader(msg)) {
             csvWriter.writeHeader(json.keySet().toArray(new String[0]));
             first = false;
           }
@@ -83,5 +90,17 @@ public class JsonArrayToCSV extends CSVConverter {
       throw ExceptionHelper.wrapServiceException(e);
     } finally {
     }
+  }
+
+  public String getIncludeHeader() {
+    return includeHeader;
+  }
+
+  public void setIncludeHeader(String includeHeader) {
+    this.includeHeader = Args.notEmpty(includeHeader, "includeHeader");
+  }
+
+  private boolean includeHeader(AdaptrisMessage msg){
+    return getIncludeHeader() != null  ? Boolean.valueOf(msg.resolve(getIncludeHeader())) : true;
   }
 }
