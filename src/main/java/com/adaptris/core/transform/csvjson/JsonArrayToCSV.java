@@ -3,18 +3,23 @@ package com.adaptris.core.transform.csvjson;
 import java.util.ArrayList;
 import java.util.Map;
 
-import com.adaptris.annotation.*;
-import com.adaptris.core.util.Args;
-import com.adaptris.validation.constraints.BooleanExpression;
 import org.supercsv.io.CsvListWriter;
 
+import com.adaptris.annotation.AdapterComponent;
+import com.adaptris.annotation.AdvancedConfig;
+import com.adaptris.annotation.ComponentProfile;
+import com.adaptris.annotation.InputFieldDefault;
+import com.adaptris.annotation.InputFieldHint;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.json.JsonUtil;
 import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
+import com.adaptris.core.util.Args;
+import com.adaptris.core.util.CloseableIterable;
 import com.adaptris.core.util.ExceptionHelper;
 import com.adaptris.core.util.LoggingHelper;
+import com.adaptris.validation.constraints.BooleanExpression;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 
@@ -76,8 +81,9 @@ public class JsonArrayToCSV extends CSVConverter {
       LargeJsonArraySplitter splitter =
           new LargeJsonArraySplitter().withMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
       boolean first = true;
-      try (CsvListWriter csvWriter = new CsvListWriter(msg.getWriter(), getPreferenceBuilder().build())) {
-        for (AdaptrisMessage m : splitter.splitMessage(msg)) {
+      try (CsvListWriter csvWriter = new CsvListWriter(msg.getWriter(), getPreferenceBuilder().build());
+          CloseableIterable<AdaptrisMessage> splitMsgs = CloseableIterable.ensureCloseable(splitter.splitMessage(msg))) {
+        for (AdaptrisMessage m : splitMsgs) {
           Map<String, String> json = JsonUtil.mapifyJson(m);
           if (first && includeHeader(msg)) {
             csvWriter.writeHeader(json.keySet().toArray(new String[0]));
