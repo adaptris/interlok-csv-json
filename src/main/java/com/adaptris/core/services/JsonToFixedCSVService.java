@@ -213,6 +213,7 @@ public class JsonToFixedCSVService extends ServiceImp
 			Object o = json.get(header);
 			if (o instanceof String)
 			{
+				// See RFC 4180 for further details.
 				String value = (String)o;
 				/*
 				 * if double-quotes are used to enclose fields, then a
