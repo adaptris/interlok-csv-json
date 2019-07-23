@@ -217,6 +217,25 @@ public class JsonToFixedCSVService extends ServiceImp
 			}
 			else
 			{
+				// TODO handle , " \n
+				/*
+				There's actually a spec for CSV format and how to handle commas:
+
+    Fields containing line breaks (CRLF), double quotes, and commas should be enclosed in double-quotes.
+
+http://tools.ietf.org/html/rfc4180
+
+So, to have values foo and bar,baz, you do this:
+
+foo,"bar,baz"
+
+Another important requirement to consider (also from the spec):
+
+    If double-quotes are used to enclose fields, then a double-quote appearing inside a field must be escaped by preceding it with another double quote. For example:
+
+    "aaa","b""bb","ccc"
+
+				 */
 				sb.append(o.toString());
 			}
 			comma = true;
