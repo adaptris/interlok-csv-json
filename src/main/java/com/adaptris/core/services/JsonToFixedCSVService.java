@@ -2,27 +2,23 @@ package com.adaptris.core.services;
 
 import com.adaptris.annotation.AdapterComponent;
 import com.adaptris.annotation.ComponentProfile;
+import com.adaptris.core.AdaptrisMessage;
+import com.adaptris.core.CoreException;
+import com.adaptris.core.ServiceException;
+import com.adaptris.core.ServiceImp;
 import com.adaptris.core.util.Args;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.adaptris.core.AdaptrisMessage;
-import com.adaptris.core.CoreException;
-import com.adaptris.core.ServiceException;
-import com.adaptris.core.ServiceImp;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-
 /**
  * Marshall the JSON doc to CSV but maintain the field ordering. We do
  * currently have JSON to CSV services (interlok-csv-json), but we need
@@ -30,20 +26,19 @@ import java.util.Set;
  * <p>
  * Something along the lines of the following should do:
  * <p>
- * JsonToFixedCSVService
- * List<String> csvHeaders
- * doService()
- * if array:
- * for each element:
- * marshalToCSV(element)
- * elseif map:
- * marshalToCSV(element)
- * else:output nothing
- * log msg
- * <p>
- * marshalToCSV(element)
- * for each header in csvHeaders:
- * element.get(header) // output blank if not found
+ * <code>JsonToFixedCSVService
+ *   List<String> csvHeaders
+ *   doService()
+ *     if array:
+ *       for each element:
+ *         marshalToCSV(element)
+ *     elseif map:
+ *       marshalToCSV(element)
+ *     else:output nothing
+ *     log msg
+ *   marshalToCSV(element)
+ *     for each header in csvHeaders:
+ *       element.get(header) // output blank if not found</code>
  */
 @XStreamAlias("json-to-fixed-csv-service")
 @AdapterComponent
