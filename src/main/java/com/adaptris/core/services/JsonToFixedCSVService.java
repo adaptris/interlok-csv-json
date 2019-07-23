@@ -213,29 +213,40 @@ public class JsonToFixedCSVService extends ServiceImp
 			Object o = json.get(header);
 			if (o instanceof String)
 			{
-				sb.append((String)o);
+				String value = (String)o;
+				/*
+				 * if double-quotes are used to enclose fields, then a
+				 * double-quote appearing inside a field must be
+				 * escaped by preceding it with another double quote:
+				 * "aaa","b""bb","ccc"
+				 */
+				if (value.contains("\""))
+				{
+					value = "\"" + value.replaceAll("\"", "\"\"") + "\"";
+				}
+				/*
+				 * fields containing commas should be enclosed in
+				 * double-quotes:
+				 * foo,"bar,baz"
+				 */
+				if (value.contains(","))
+				{
+					value = "\"" + value + "\"";
+				}
+				/*
+				 * fields containing line breaks, double quotes should
+				 * be enclosed in double-quotes:
+				 * foo,"bar\nbaz"
+				 */
+				if (value.contains("\n") || value.contains("\r"))
+				{
+					//value = "\"" + value.replaceAll("\n", "\\\\n").replaceAll("\r", "\\\\r") + "\"";
+					value = "\"" + value + "\"";
+				}
+				sb.append(value);
 			}
 			else
 			{
-				// TODO handle , " \n
-				/*
-				There's actually a spec for CSV format and how to handle commas:
-
-    Fields containing line breaks (CRLF), double quotes, and commas should be enclosed in double-quotes.
-
-http://tools.ietf.org/html/rfc4180
-
-So, to have values foo and bar,baz, you do this:
-
-foo,"bar,baz"
-
-Another important requirement to consider (also from the spec):
-
-    If double-quotes are used to enclose fields, then a double-quote appearing inside a field must be escaped by preceding it with another double quote. For example:
-
-    "aaa","b""bb","ccc"
-
-				 */
 				sb.append(o.toString());
 			}
 			comma = true;
