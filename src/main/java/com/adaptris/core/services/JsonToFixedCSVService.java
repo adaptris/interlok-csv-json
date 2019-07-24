@@ -45,7 +45,7 @@ import java.util.List;
 @ComponentProfile(summary = "Transform a JSON document to CSV", tag = "service,transform,json,csv")
 public class JsonToFixedCSVService extends ServiceImp
 {
-	private transient Logger log = LoggerFactory.getLogger(this.getClass());
+	private transient Logger log = LoggerFactory.getLogger(getClass());
 
 	@NotNull
 	@Valid
@@ -114,11 +114,13 @@ public class JsonToFixedCSVService extends ServiceImp
 	@Override
 	public void doService(AdaptrisMessage msg) throws ServiceException
 	{
+		log.info("Starting JSON to CSV transformation");
 		String jString = msg.getContent().trim();
 		StringBuffer content = new StringBuffer();
 		if (jString.startsWith("["))
 		{
 			JSONArray json = new JSONArray(new JSONTokener(jString));
+			log.debug("JSON object is an array with length " + json.length());
 			for (int i = 0; i < json.length(); i++)
 			{
 				content.append(marshalToCSV(json.getJSONObject(i)));
@@ -131,6 +133,7 @@ public class JsonToFixedCSVService extends ServiceImp
 		}
 
 		StringBuffer headers = new StringBuffer();
+		log.debug((showHeaders ? "I" : "Not i") + "ncluding CSV headers");
 		if (showHeaders)
 		{
 			for (String header : csvHeaders)
@@ -145,6 +148,7 @@ public class JsonToFixedCSVService extends ServiceImp
 		}
 
 		msg.setContent(headers.append(content).toString(), msg.getContentEncoding());
+		log.info("Finished JSON to CSV transformation");
 	}
 
 	/**
@@ -163,45 +167,47 @@ public class JsonToFixedCSVService extends ServiceImp
 			{
 				sb.append(',');
 			}
-			Object o = json.get(header);
-			if (o instanceof String)
+			if (json.has(header))
 			{
-				// See RFC 4180 for further details.
-				String value = (String)o;
-				/*
-				 * if double-quotes are used to enclose fields, then a
-				 * double-quote appearing inside a field must be
-				 * escaped by preceding it with another double quote:
-				 * "aaa","b""bb","ccc"
-				 */
-				if (value.contains("\""))
+				Object o = json.get(header);
+				if (o instanceof String)
 				{
-					value = "\"" + value.replaceAll("\"", "\"\"") + "\"";
+					// See RFC 4180 for further details.
+					String value = (String)o;
+					/*
+					 * if double-quotes are used to enclose fields, then a
+					 * double-quote appearing inside a field must be
+					 * escaped by preceding it with another double quote:
+					 * "aaa","b""bb","ccc"
+					 */
+					if (value.contains("\""))
+					{
+						value = "\"" + value.replaceAll("\"", "\"\"") + "\"";
+					}
+					/*
+					 * fields containing commas should be enclosed in
+					 * double-quotes:
+					 * foo,"bar,baz"
+					 */
+					if (value.contains(","))
+					{
+						value = "\"" + value + "\"";
+					}
+					/*
+					 * fields containing line breaks, double quotes should
+					 * be enclosed in double-quotes:
+					 * foo,"bar\nbaz"
+					 */
+					if (value.contains("\n") || value.contains("\r"))
+					{
+						value = "\"" + value + "\"";
+					}
+					sb.append(value);
 				}
-				/*
-				 * fields containing commas should be enclosed in
-				 * double-quotes:
-				 * foo,"bar,baz"
-				 */
-				if (value.contains(","))
+				else
 				{
-					value = "\"" + value + "\"";
+					sb.append(o.toString());
 				}
-				/*
-				 * fields containing line breaks, double quotes should
-				 * be enclosed in double-quotes:
-				 * foo,"bar\nbaz"
-				 */
-				if (value.contains("\n") || value.contains("\r"))
-				{
-					//value = "\"" + value.replaceAll("\n", "\\\\n").replaceAll("\r", "\\\\r") + "\"";
-					value = "\"" + value + "\"";
-				}
-				sb.append(value);
-			}
-			else
-			{
-				sb.append(o.toString());
 			}
 			comma = true;
 		}
