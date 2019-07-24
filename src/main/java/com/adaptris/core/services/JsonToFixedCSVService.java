@@ -52,9 +52,6 @@ public class JsonToFixedCSVService extends ServiceImp
 	private List<String> csvHeaders = new ArrayList<>();
 
 	@Valid
-	private boolean autoDetectHeaders = false;
-
-	@Valid
 	private boolean showHeaders = true;
 
 	/**
@@ -75,39 +72,6 @@ public class JsonToFixedCSVService extends ServiceImp
 	public List<String> getCsvHeaders()
 	{
 		return csvHeaders;
-	}
-
-	/**
-	 * Set whether the CSV headers should be auto-detected from the JSON.
-	 *
-	 * @param autoDetectHeaders True if CSV headers should be auto-detected.
-	 */
-	public void setAutoDetectHeaders(boolean autoDetectHeaders)
-	{
-		this.autoDetectHeaders = autoDetectHeaders;
-	}
-
-	/**
-	 * Get whether the CSV headers are auto-detected.
-	 *
-	 * @return True if CSV headers are auto-detected.
-	 */
-	public boolean isAutoDetectHeaders()
-	{
-		return autoDetectHeaders;
-	}
-
-	/**
-	 * Get whether the CSV headers are auto-detected. Convention says
-	 * you should use {@code}is...()} for boolean values, so go use
-	 * {@link JsonToFixedCSVService#isAutoDetectHeaders} instead. This
-	 * method is provided in case XStream isn't that smart.
-	 *
-	 * @return True if CSV headers are auto-detected.
-	 */
-	public boolean getAutoDetectHeaders()
-	{
-		return isAutoDetectHeaders();
 	}
 
 	/**
@@ -134,7 +98,7 @@ public class JsonToFixedCSVService extends ServiceImp
 	 * Get whether the CSV headers are included in the output.
 	 * Convention says you should use {@code}is...()} for boolean
 	 * values, so go use
-	 * {@link JsonToFixedCSVService#isAutoDetectHeaders} instead. This
+	 * {@link JsonToFixedCSVService#isShowHeaders} instead. This
 	 * method is provided in case XStream isn't that smart.
 	 *
 	 * @return True if CSV headers are included.
@@ -155,13 +119,6 @@ public class JsonToFixedCSVService extends ServiceImp
 		if (jString.startsWith("["))
 		{
 			JSONArray json = new JSONArray(new JSONTokener(jString));
-			if (autoDetectHeaders)
-			{
-				for (int i = 0; i < json.length(); i++)
-				{
-					autoDetectHeaders(json.getJSONObject(i));
-				}
-			}
 			for (int i = 0; i < json.length(); i++)
 			{
 				content.append(marshalToCSV(json.getJSONObject(i)));
@@ -170,10 +127,6 @@ public class JsonToFixedCSVService extends ServiceImp
 		else if (jString.startsWith("{"))
 		{
 			JSONObject json = new JSONObject(new JSONTokener(jString));
-			if (autoDetectHeaders)
-			{
-				autoDetectHeaders(json);
-			}
 			content.append(marshalToCSV(json));
 		}
 
@@ -253,23 +206,6 @@ public class JsonToFixedCSVService extends ServiceImp
 			comma = true;
 		}
 		return sb.append('\n').toString();
-	}
-
-	/**
-	 * Detect all possible JSON keys to use as CSV headers.
-	 *
-	 * @param json The JSON to parse.
-	 */
-	private void autoDetectHeaders(JSONObject json)
-	{
-		for (Iterator<String> i = json.keys(); i.hasNext();)
-		{
-			String key = i.next();
-			if (!csvHeaders.contains(key))
-			{
-				csvHeaders.add(key);
-			}
-		}
 	}
 
 	/**
