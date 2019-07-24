@@ -16,9 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+
 /**
  * Marshall the JSON doc to CSV but maintain the field ordering. We do
  * currently have JSON to CSV services (interlok-csv-json), but we need
@@ -49,63 +47,63 @@ public class JsonToFixedCSVService extends ServiceImp
 
 	@NotNull
 	@Valid
-	private List<String> csvHeaders = new ArrayList<>();
+	private String csvHeader = new String();
 
 	@Valid
-	private boolean showHeaders = true;
+	private boolean showHeader = true;
 
 	/**
-	 * Set the CSV headers.
+	 * Set the CSV header.
 	 *
-	 * @param csvHeaders A list of the CSV headers.
+	 * @param csvHeader The CSV header row.
 	 */
-	public void setCsvHeaders(List<String> csvHeaders)
+	public void setCsvHeader(String csvHeader)
 	{
-		this.csvHeaders = Args.notNull(csvHeaders, "CSV Headers");
+		this.csvHeader = Args.notNull(csvHeader.trim(), "CSV Header");
 	}
 
 	/**
-	 * Get the CSV headers.
+	 * Get the CSV header.
 	 *
-	 * @return A list of CSV headers.
+	 * @return The CSV header row.
 	 */
-	public List<String> getCsvHeaders()
+	public String getCsvHeader()
 	{
-		return csvHeaders;
+		return csvHeader;
 	}
 
 	/**
-	 * Set whether the CSV headers should be in the output.
+	 * Set whether the CSV header should be in the output.
 	 *
-	 * @param showHeaders True if CSV headers should be included.
+	 * @param showHeader True if CSV header should be included.
 	 */
-	public void setShowHeaders(boolean showHeaders)
+	public void setShowHeader(boolean showHeader)
 	{
-		this.showHeaders = showHeaders;
+		this.showHeader = showHeader;
 	}
 
 	/**
-	 * Get whether the CSV headers are included in the output.
+	 * Get whether the CSV header is included in the output.
 	 *
-	 * @return True if CSV headers are included.
+	 * @return True if CSV header is included.
 	 */
-	public boolean isShowHeaders()
+	public boolean isShowHeader()
 	{
-		return showHeaders;
+		return showHeader;
 	}
 
 	/**
-	 * Get whether the CSV headers are included in the output.
+	 * Get whether the CSV header is included in the output.
 	 * Convention says you should use {@code}is...()} for boolean
 	 * values, so go use
-	 * {@link JsonToFixedCSVService#isShowHeaders} instead. This
+	 * {@link JsonToFixedCSVService#isShowHeader} instead. This
 	 * method is provided in case XStream isn't that smart.
 	 *
-	 * @return True if CSV headers are included.
+	 * @return True if CSV header are included.
 	 */
-	public boolean getShowHeaders()
+	public boolean getShowHeader()
 	{
-		return isShowHeaders();
+		return isShowHeader();
 	}
 
 	/**
@@ -132,22 +130,14 @@ public class JsonToFixedCSVService extends ServiceImp
 			content.append(marshalToCSV(json));
 		}
 
-		StringBuffer headers = new StringBuffer();
-		log.debug((showHeaders ? "I" : "Not i") + "ncluding CSV headers");
-		if (showHeaders)
+		log.debug((showHeader ? "I" : "Not i") + "ncluding CSV headers");
+		if (showHeader)
 		{
-			for (String header : csvHeaders)
-			{
-				if (headers.length() > 0)
-				{
-					headers.append(',');
-				}
-				headers.append(header);
-			}
-			headers.append('\n');
+			content.insert(0, csvHeader);
+			content.insert(csvHeader.length(), '\n');
 		}
 
-		msg.setContent(headers.append(content).toString(), msg.getContentEncoding());
+		msg.setContent(content.toString(), msg.getContentEncoding());
 		log.info("Finished JSON to CSV transformation");
 	}
 
@@ -161,7 +151,7 @@ public class JsonToFixedCSVService extends ServiceImp
 	{
 		StringBuffer sb = new StringBuffer();
 		boolean comma = false;
-		for (String header : csvHeaders)
+		for (String header : csvHeader.split(","))
 		{
 			if (comma)
 			{
