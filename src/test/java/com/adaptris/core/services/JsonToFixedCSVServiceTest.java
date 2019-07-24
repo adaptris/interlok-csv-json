@@ -41,7 +41,7 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 	 * @throws Exception
 	 */
 	@Test
-	public void testServiceWithArrayNoAutoDetectWithHeaders() throws Exception
+	public void testServiceWithArrayWithHeaders() throws Exception
 	{
 		AdaptrisMessage message = getMessage(JSON_ARRAY_RESOURCE);
 		JsonToFixedCSVService service = getService(true, getHeaders(CSV_HEADERS));
@@ -59,7 +59,7 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 	 * @throws Exception
 	 */
 	@Test
-	public void testServiceWithArrayNoAutoDetectNoHeaders() throws Exception
+	public void testServiceWithArrayNoHeaders() throws Exception
 	{
 		AdaptrisMessage message = getMessage(JSON_ARRAY_RESOURCE);
 		JsonToFixedCSVService service = getService(false, getHeaders(CSV_HEADERS));
@@ -77,7 +77,7 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 	 * @throws Exception
 	 */
 	@Test
-	public void testServiceWithObjectNoAutoDetectWithHeaders() throws Exception
+	public void testServiceWithObjectWithHeaders() throws Exception
 	{
 		AdaptrisMessage message = getMessage(JSON_OBJECT_RESOURCE);
 		JsonToFixedCSVService service = getService(true, getHeaders(CSV_HEADERS));
@@ -95,7 +95,7 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 	 * @throws Exception
 	 */
 	@Test
-	public void testServiceWithObjectNoAutoDetectNoHeaders() throws Exception
+	public void testServiceWithObjectNoHeaders() throws Exception
 	{
 		AdaptrisMessage message = getMessage(JSON_OBJECT_RESOURCE);
 		JsonToFixedCSVService service = getService(false, getHeaders(CSV_HEADERS));
@@ -117,7 +117,7 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 	{
 		AdaptrisMessage message = getMessage(JSON_OBJECT_RESOURCE);
 		message.setContent(message.getContent().replace("Units", "\\\"Units\\\""), message.getContentEncoding());
-		JsonToFixedCSVService service = getService(true, getHeaders(CSV_HEADERS));
+		JsonToFixedCSVService service = getService(true, CSV_HEADERS);
 
 		execute(service, message);
 
@@ -135,7 +135,7 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 	{
 		AdaptrisMessage message = getMessage(JSON_OBJECT_RESOURCE);
 		message.setContent(message.getContent().replace(" Units", ", Units"), message.getContentEncoding());
-		JsonToFixedCSVService service = getService(true, getHeaders(CSV_HEADERS));
+		JsonToFixedCSVService service = getService(true, CSV_HEADERS);
 
 		execute(service, message);
 
@@ -153,7 +153,7 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 	{
 		AdaptrisMessage message = getMessage(JSON_OBJECT_RESOURCE);
 		message.setContent(message.getContent().replace(" Units", "\\n Units"), message.getContentEncoding());
-		JsonToFixedCSVService service = getService(true, getHeaders(CSV_HEADERS));
+		JsonToFixedCSVService service = getService(true, CSV_HEADERS);
 
 		execute(service, message);
 
@@ -176,11 +176,18 @@ public class JsonToFixedCSVServiceTest extends ServiceCase
 		return AdaptrisMessageFactory.getDefaultInstance().newMessage(IOUtils.toString(getClass().getResourceAsStream(resource), "UTF-8"));
 	}
 
-	private JsonToFixedCSVService getService(boolean showHeaders, List<String> headers)
+	private JsonToFixedCSVService getService(boolean showHeaders, Object headers)
 	{
 		JsonToFixedCSVService service = (JsonToFixedCSVService)retrieveObjectForSampleConfig();
 		service.setShowHeaders(showHeaders);
-		service.setCsvHeaders(headers);
+		if (headers instanceof String)
+		{
+			service.setCsvHeaders((String)headers);
+		}
+		else
+		{
+			service.setCsvHeaders((List<String>)headers);
+		}
 		return service;
 	}
 
