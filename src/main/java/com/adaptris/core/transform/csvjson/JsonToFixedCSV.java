@@ -54,8 +54,6 @@ public class JsonToFixedCSV extends ServiceImp
 	@Valid
 	private String csvHeader = new String();
 
-	private transient List<String> header;
-
 	@Valid
 	private boolean showHeader = true;
 
@@ -67,11 +65,6 @@ public class JsonToFixedCSV extends ServiceImp
 	public void setCsvHeader(String csvHeader)
 	{
 		this.csvHeader = Args.notNull(csvHeader.trim(), "CSV Header");
-		header = new ArrayList<>();
-		for (String h : this.csvHeader.split(","))
-		{
-			header.add(h);
-		}
 	}
 
 	/**
@@ -124,13 +117,12 @@ public class JsonToFixedCSV extends ServiceImp
 	@Override
 	public void doService(AdaptrisMessage msg) throws ServiceException
 	{
-		log.info("Starting JSON to CSV transformation");
+		log.info("Starting JSON to CSV transformation with" + (showHeader ? "" : "out") + " header");
 		try(CSVPrinter csv = new CSVPrinter(new StringBuffer(), CSVFormat.DEFAULT))
 		{
-			log.debug((showHeader ? "I" : "Not i") + "ncluding CSV headers");
 			if (showHeader)
 			{
-				csv.printRecord(header);
+				csv.printRecord(header());
 			}
 
 			String jString = msg.getContent();
@@ -140,12 +132,15 @@ public class JsonToFixedCSV extends ServiceImp
 				log.debug("JSON object is an array with length " + json.length());
 				for (int i = 0; i < json.length(); i++)
 				{
-					csv.printRecord(marshalToCSV(json.getJSONObject(i)));
+					JSONObject jo = json.getJSONObject(i);
+					log.debug("JSON object " + i + " has " + jo.keySet().size() + " keys");
+					csv.printRecord(marshalToCSV(jo));
 				}
 			}
 			else if (jString.startsWith("{"))
 			{
 				JSONObject json = new JSONObject(new JSONTokener(jString));
+				log.debug("JSON object has " + json.keySet().size() + " keys");
 				csv.printRecord(marshalToCSV(json));
 			}
 
@@ -170,7 +165,7 @@ public class JsonToFixedCSV extends ServiceImp
 	private List<String> marshalToCSV(JSONObject json)
 	{
 		List<String> record = new ArrayList<>();
-		for (String header : header)
+		for (String header : header())
 		{
 			if (json.has(header))
 			{
@@ -178,10 +173,26 @@ public class JsonToFixedCSV extends ServiceImp
 			}
 			else
 			{
-				record.add("");
+				record.add(""); // Add empty column to CSV
 			}
 		}
 		return record;
+	}
+
+	/**
+	 * Simple helper method, as the CSV header is better suited to
+	 * being a list in most situations.
+	 *
+	 * @return A list of the header columns.
+	 */
+	private List<String> header()
+	{
+		List<String> header = new ArrayList<>();
+		for (String column : csvHeader.split(","))
+		{
+			header.add(column);
+		}
+		return header;
 	}
 
 	/**
