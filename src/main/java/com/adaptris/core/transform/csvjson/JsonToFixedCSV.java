@@ -10,6 +10,7 @@ import com.adaptris.core.util.Args;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang.BooleanUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -55,7 +56,7 @@ public class JsonToFixedCSV extends ServiceImp
 	private String csvHeader = new String();
 
 	@Valid
-	private boolean showHeader = true;
+	private Boolean showHeader = true;
 
 	/**
 	 * Set the CSV header.
@@ -84,7 +85,7 @@ public class JsonToFixedCSV extends ServiceImp
 	 */
 	public void setShowHeader(boolean showHeader)
 	{
-		this.showHeader = showHeader;
+		this.showHeader = BooleanUtils.toBooleanDefaultIfNull(showHeader, true);
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class JsonToFixedCSV extends ServiceImp
 	 *
 	 * @return True if CSV header is included.
 	 */
-	public boolean isShowHeader()
+	public Boolean isShowHeader()
 	{
 		return showHeader;
 	}
@@ -106,7 +107,7 @@ public class JsonToFixedCSV extends ServiceImp
 	 *
 	 * @return True if CSV header are included.
 	 */
-	public boolean getShowHeader()
+	public Boolean getShowHeader()
 	{
 		return isShowHeader();
 	}
