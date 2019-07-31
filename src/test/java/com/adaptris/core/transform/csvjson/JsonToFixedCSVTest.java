@@ -7,6 +7,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.validation.constraints.AssertTrue;
 import java.io.IOException;
 
 public class JsonToFixedCSVTest extends ServiceCase
@@ -176,6 +177,7 @@ public class JsonToFixedCSVTest extends ServiceCase
 
 		execute(service, message);
 
+		Assert.assertFalse(service.getShowHeader());
 		Assert.assertEquals(CSV_MINIMAL, message.getContent());
 	}
 
