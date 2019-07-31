@@ -1,30 +1,32 @@
 package com.adaptris.core.transform.csvjson;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
+import com.adaptris.annotation.AdapterComponent;
+import com.adaptris.annotation.ComponentProfile;
+import com.adaptris.annotation.InputFieldDefault;
+import com.adaptris.core.AdaptrisMessage;
+import com.adaptris.core.AdaptrisMessageFactory;
+import com.adaptris.core.CoreException;
+import com.adaptris.core.ServiceException;
+import com.adaptris.core.ServiceImp;
+import com.adaptris.core.json.JsonUtil;
+import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
+import com.adaptris.core.util.Args;
+import com.adaptris.core.util.CloseableIterable;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.BooleanUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.adaptris.annotation.AdapterComponent;
-import com.adaptris.annotation.ComponentProfile;
-import com.adaptris.annotation.InputFieldDefault;
-import com.adaptris.core.AdaptrisMessage;
-import com.adaptris.core.CoreException;
-import com.adaptris.core.ServiceException;
-import com.adaptris.core.ServiceImp;
-import com.adaptris.core.util.Args;
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Marshall the JSON doc to CSV but maintain the field ordering. We do
@@ -119,31 +121,34 @@ public class JsonToFixedCSV extends ServiceImp
 	private boolean showHeaders() {
 	  return BooleanUtils.toBooleanDefaultIfNull(getShowHeader(), true);
 	}
-	
+
 	/**
 	 * {@inheritDoc}.
 	 */
 	@Override
-	public void doService(AdaptrisMessage msg) throws ServiceException
+	public void doService(AdaptrisMessage message) throws ServiceException
 	{
 		log.info("Starting JSON to CSV transformation with" + (showHeaders() ? "" : "out") + " header");
-		try(CSVPrinter csv = new CSVPrinter(new StringBuffer(), CSVFormat.DEFAULT))
+		try(CSVPrinter csv = new CSVPrinter(message.getWriter(), CSVFormat.DEFAULT))
 		{
 			if (showHeaders())
 			{
 				csv.printRecord(header());
 			}
 
-			String jString = msg.getContent();
+			String jString = message.getContent().trim();
 			if (jString.startsWith("["))
 			{
-				JSONArray json = new JSONArray(new JSONTokener(jString));
-				log.debug("JSON object is an array with length " + json.length());
-				for (int i = 0; i < json.length(); i++)
+				LargeJsonArraySplitter splitter = new LargeJsonArraySplitter().withMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
+				try (CloseableIterable<AdaptrisMessage> splitMessages = CloseableIterable.ensureCloseable(splitter.splitMessage(message)))
 				{
-					JSONObject jo = json.getJSONObject(i);
-					log.debug("JSON object " + i + " has " + jo.keySet().size() + " keys");
-					csv.printRecord(marshalToCSV(jo));
+					log.debug("Split JSON array into series of messages");
+					for (AdaptrisMessage splitMessage : splitMessages)
+					{
+						Map<String, String> jMap = JsonUtil.mapifyJson(splitMessage);
+						log.debug("JSON object has " + jMap.size() + " keys");
+						csv.printRecord(marshalToCSV(jMap));
+					}
 				}
 			}
 			else if (jString.startsWith("{"))
@@ -152,12 +157,16 @@ public class JsonToFixedCSV extends ServiceImp
 				log.debug("JSON object has " + json.keySet().size() + " keys");
 				csv.printRecord(marshalToCSV(json));
 			}
-
-			msg.setContent(csv.getOut().toString(), msg.getContentEncoding());
 		}
 		catch (IOException e)
 		{
 			log.error("Problem generating CSV data", e);
+			throw new ServiceException(e);
+		}
+		catch (CoreException e)
+		{
+			log.error("Could not split JSON data", e);
+			throw new ServiceException(e);
 		}
 		finally
 		{
@@ -179,6 +188,30 @@ public class JsonToFixedCSV extends ServiceImp
 			if (json.has(header))
 			{
 				record.add(json.get(header).toString());
+			}
+			else
+			{
+				record.add(""); // Add empty column to CSV
+			}
+		}
+		return record;
+	}
+
+	/**
+	 * Marshal part of a large JSON array to CSV.
+	 *
+	 * @param jMap The map of this particular JSON object.
+	 *
+	 * @return The CSV row as a list of Strings.
+	 */
+	private List<String> marshalToCSV(Map<String, String> jMap)
+	{
+		List<String> record = new ArrayList<>();
+		for (String header : header())
+		{
+			if (jMap.containsKey(header))
+			{
+				record.add(jMap.get(header));
 			}
 			else
 			{
