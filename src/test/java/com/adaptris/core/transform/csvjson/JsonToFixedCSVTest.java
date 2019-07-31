@@ -182,6 +182,25 @@ public class JsonToFixedCSVTest extends ServiceCase
 	}
 
 	/**
+	 * Test that the service behaves as expected if limited JSON is
+	 * given to it.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testMinimalJsonArray() throws Exception
+	{
+		AdaptrisMessage message = getMessage(JSON_MINIMAL_RESOURCE);
+		message.setContent("[" + message.getContent() + "]", message.getContentEncoding());
+		JsonToFixedCSV service = getService(false, CSV_HEADER);
+
+		execute(service, message);
+
+		Assert.assertFalse(service.getShowHeader());
+		Assert.assertEquals(CSV_MINIMAL, message.getContent());
+	}
+
+	/**
 	 * Test that the service behaves as expected if bad JSON is given
 	 * to it.
 	 *
