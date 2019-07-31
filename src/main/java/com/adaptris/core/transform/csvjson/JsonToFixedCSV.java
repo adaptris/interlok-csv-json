@@ -1,27 +1,30 @@
 package com.adaptris.core.transform.csvjson;
 
-import com.adaptris.annotation.AdapterComponent;
-import com.adaptris.annotation.ComponentProfile;
-import com.adaptris.core.AdaptrisMessage;
-import com.adaptris.core.CoreException;
-import com.adaptris.core.ServiceException;
-import com.adaptris.core.ServiceImp;
-import com.adaptris.core.util.Args;
-import com.thoughtworks.xstream.annotations.XStreamAlias;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.adaptris.annotation.AdapterComponent;
+import com.adaptris.annotation.ComponentProfile;
+import com.adaptris.annotation.InputFieldDefault;
+import com.adaptris.core.AdaptrisMessage;
+import com.adaptris.core.CoreException;
+import com.adaptris.core.ServiceException;
+import com.adaptris.core.ServiceImp;
+import com.adaptris.core.util.Args;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 /**
  * Marshall the JSON doc to CSV but maintain the field ordering. We do
@@ -56,7 +59,8 @@ public class JsonToFixedCSV extends ServiceImp
 	private String csvHeader = new String();
 
 	@Valid
-	private Boolean showHeader = true;
+	@InputFieldDefault(value = "true")
+	private Boolean showHeader;
 
 	/**
 	 * Set the CSV header.
@@ -83,9 +87,9 @@ public class JsonToFixedCSV extends ServiceImp
 	 *
 	 * @param showHeader True if CSV header should be included.
 	 */
-	public void setShowHeader(boolean showHeader)
+	public void setShowHeader(Boolean showHeader)
 	{
-		this.showHeader = BooleanUtils.toBooleanDefaultIfNull(showHeader, true);
+		this.showHeader = showHeader;
 	}
 
 	/**
@@ -112,16 +116,20 @@ public class JsonToFixedCSV extends ServiceImp
 		return isShowHeader();
 	}
 
+	private boolean showHeaders() {
+	  return BooleanUtils.toBooleanDefaultIfNull(getShowHeader(), true);
+	}
+	
 	/**
 	 * {@inheritDoc}.
 	 */
 	@Override
 	public void doService(AdaptrisMessage msg) throws ServiceException
 	{
-		log.info("Starting JSON to CSV transformation with" + (showHeader ? "" : "out") + " header");
+		log.info("Starting JSON to CSV transformation with" + (showHeaders() ? "" : "out") + " header");
 		try(CSVPrinter csv = new CSVPrinter(new StringBuffer(), CSVFormat.DEFAULT))
 		{
-			if (showHeader)
+			if (showHeaders())
 			{
 				csv.printRecord(header());
 			}
