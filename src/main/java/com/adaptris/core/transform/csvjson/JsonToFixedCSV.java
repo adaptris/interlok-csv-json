@@ -170,7 +170,7 @@ public class JsonToFixedCSV extends ServiceImp
 			messageSplitter.setMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
 			try (CloseableIterable<AdaptrisMessage> splitMessages = CloseableIterable.ensureCloseable(messageSplitter.splitMessage(message)))
 			{
-				if (messageSplitter.getClass().equals(LargeJsonArraySplitter.class))
+				if (messageSplitter.getClass().equals(LargeJsonArraySplitter.class) || messageSplitter.getClass().equals(JsonArraySplitter.class))
 				{
 					log.debug("Split JSON array into series of messages");
 					for (AdaptrisMessage splitMessage : splitMessages)
