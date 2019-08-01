@@ -10,7 +10,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class JsonToFixedCSVTest extends ServiceCase
@@ -24,8 +23,6 @@ public class JsonToFixedCSVTest extends ServiceCase
 	private static final String JSON_OBJECT = "object.json";
 	private static final String CSV_OBJECT_HEADER = "object-header.csv";
 	private static final String CSV_OBJECT = "object.csv";
-
-	private static final String CSV_ESCAPE_NEWLINES = "csv-escape-newlines.csv";
 
 	public JsonToFixedCSVTest()
 	{
@@ -66,10 +63,7 @@ public class JsonToFixedCSVTest extends ServiceCase
 
 		execute(service, message);
 
-		String resource = getResource(CSV_ARRAY);
-		String content = message.getContent();
-
-		Assert.assertEquals(resource, content);
+		Assert.assertEquals(getResource(CSV_ARRAY), message.getContent());
 	}
 
 	/**
