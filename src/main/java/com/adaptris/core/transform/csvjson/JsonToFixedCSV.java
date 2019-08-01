@@ -9,6 +9,11 @@ import com.adaptris.core.CoreException;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.ServiceImp;
 import com.adaptris.core.json.JsonUtil;
+import com.adaptris.core.services.splitter.LineCountSplitter;
+import com.adaptris.core.services.splitter.MessageSplitter;
+import com.adaptris.core.services.splitter.MessageSplitterImp;
+import com.adaptris.core.services.splitter.json.JsonArraySplitter;
+import com.adaptris.core.services.splitter.json.JsonObjectSplitter;
 import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
 import com.adaptris.core.util.Args;
 import com.adaptris.core.util.CloseableIterable;
@@ -16,8 +21,6 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.BooleanUtils;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +28,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +55,9 @@ import java.util.Map;
  */
 @XStreamAlias("json-to-fixed-csv-service")
 @AdapterComponent
-@ComponentProfile(summary = "Transform a JSON document to CSV with a fixed header", tag = "service,transform,json,csv")
+@ComponentProfile(summary = "Transform a JSON document to CSV with a fixed header",
+		tag = "service,transform,json,csv",
+		recommended = { JsonArraySplitter.class, JsonObjectSplitter.class, LargeJsonArraySplitter.class, LineCountSplitter.class })
 public class JsonToFixedCSV extends ServiceImp
 {
 	private transient Logger log = LoggerFactory.getLogger(getClass());
@@ -63,6 +69,10 @@ public class JsonToFixedCSV extends ServiceImp
 	@Valid
 	@InputFieldDefault(value = "true")
 	private Boolean showHeader;
+
+	@NotNull
+	@Valid
+	private MessageSplitterImp messageSplitter = new JsonObjectSplitter();
 
 	/**
 	 * Set the CSV header.
@@ -118,8 +128,30 @@ public class JsonToFixedCSV extends ServiceImp
 		return isShowHeader();
 	}
 
-	private boolean showHeaders() {
+	protected boolean showHeaders() {
 	  return BooleanUtils.toBooleanDefaultIfNull(getShowHeader(), true);
+	}
+
+	/**
+	 * Set the splitter to use to divvy up the original message if it's
+	 * particularly large.
+	 *
+	 * @param messageSplitter The message splitter.
+	 */
+	public void setMessageSplitter(MessageSplitterImp messageSplitter)
+	{
+		this.messageSplitter = Args.notNull(messageSplitter, "Message Splitter");
+	}
+
+	/**
+	 * Get the splitter used to divvy up the original message if it's
+	 * particularly large.
+	 *
+	 * @return The message splitter.
+	 */
+	public MessageSplitter getMessageSplitter()
+	{
+		return messageSplitter;
 	}
 
 	/**
@@ -136,11 +168,10 @@ public class JsonToFixedCSV extends ServiceImp
 				csv.printRecord(header());
 			}
 
-			String jString = message.getContent().trim();
-			if (jString.startsWith("["))
+			messageSplitter.setMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
+			try (CloseableIterable<AdaptrisMessage> splitMessages = CloseableIterable.ensureCloseable(messageSplitter.splitMessage(message)))
 			{
-				LargeJsonArraySplitter splitter = new LargeJsonArraySplitter().withMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
-				try (CloseableIterable<AdaptrisMessage> splitMessages = CloseableIterable.ensureCloseable(splitter.splitMessage(message)))
+				if (messageSplitter.getClass().equals(LargeJsonArraySplitter.class))
 				{
 					log.debug("Split JSON array into series of messages");
 					for (AdaptrisMessage splitMessage : splitMessages)
@@ -150,51 +181,30 @@ public class JsonToFixedCSV extends ServiceImp
 						csv.printRecord(marshalToCSV(jMap));
 					}
 				}
-			}
-			else if (jString.startsWith("{"))
-			{
-				JSONObject json = new JSONObject(new JSONTokener(jString));
-				log.debug("JSON object has " + json.keySet().size() + " keys");
-				csv.printRecord(marshalToCSV(json));
+				else
+				{
+					// handles a JSON object but not a JSON array
+					log.debug("Split JSON message into series of messages ");
+					Map<String, String> jMap = new HashMap<>();
+					for (AdaptrisMessage splitMessage : splitMessages)
+					{
+						Map<String, String> map = JsonUtil.mapifyJson(splitMessage);
+						log.debug("JSON object has another " + map.size() + " keys");
+						jMap.putAll(map);
+					}
+					csv.printRecord(marshalToCSV(jMap));
+				}
 			}
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
-			log.error("Problem generating CSV data", e);
-			throw new ServiceException(e);
-		}
-		catch (CoreException e)
-		{
-			log.error("Could not split JSON data", e);
+			log.error("Could not parse JSON nor generate CSV data", e);
 			throw new ServiceException(e);
 		}
 		finally
 		{
 			log.info("Finished JSON to CSV transformation");
 		}
-	}
-
-	/**
-	 * Marshal a JSON object to CSV.
-	 *
-	 * @param json The JSON to convert to CSV.
-	 * @return The CSV row as a list of Strings.
-	 */
-	private List<String> marshalToCSV(JSONObject json)
-	{
-		List<String> record = new ArrayList<>();
-		for (String header : header())
-		{
-			if (json.has(header))
-			{
-				record.add(json.get(header).toString());
-			}
-			else
-			{
-				record.add(""); // Add empty column to CSV
-			}
-		}
-		return record;
 	}
 
 	/**
