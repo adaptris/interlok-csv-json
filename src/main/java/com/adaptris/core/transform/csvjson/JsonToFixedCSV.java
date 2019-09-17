@@ -17,6 +17,8 @@ import com.adaptris.core.services.splitter.json.JsonObjectSplitter;
 import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
 import com.adaptris.core.util.Args;
 import com.adaptris.core.util.CloseableIterable;
+import com.adaptris.interlok.InterlokException;
+import com.adaptris.interlok.config.DataInputParameter;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -63,7 +65,7 @@ public class JsonToFixedCSV extends ServiceImp
 
 	@NotNull
 	@Valid
-	private String csvHeader = new String();
+	private DataInputParameter<String>  csvHeader;
 
 	@Valid
 	@InputFieldDefault(value = "true")
@@ -78,9 +80,9 @@ public class JsonToFixedCSV extends ServiceImp
 	 *
 	 * @param csvHeader The CSV header row.
 	 */
-	public void setCsvHeader(String csvHeader)
+	public void setCsvHeader(DataInputParameter<String> csvHeader)
 	{
-		this.csvHeader = Args.notNull(csvHeader.trim(), "CSV Header");
+		this.csvHeader = Args.notNull(csvHeader, "CSV Header");
 	}
 
 	/**
@@ -88,7 +90,7 @@ public class JsonToFixedCSV extends ServiceImp
 	 *
 	 * @return The CSV header row.
 	 */
-	public String getCsvHeader()
+	public DataInputParameter<String> getCsvHeader()
 	{
 		return csvHeader;
 	}
@@ -160,11 +162,12 @@ public class JsonToFixedCSV extends ServiceImp
 	public void doService(AdaptrisMessage message) throws ServiceException
 	{
 		log.info("Starting JSON to CSV transformation with" + (showHeaders() ? "" : "out") + " header");
+
 		try(CSVPrinter csv = new CSVPrinter(message.getWriter(), CSVFormat.DEFAULT))
 		{
 			if (showHeaders())
 			{
-				csv.printRecord(header());
+				csv.printRecord(header(message));
 			}
 
 			messageSplitter.setMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
@@ -177,7 +180,7 @@ public class JsonToFixedCSV extends ServiceImp
 					{
 						Map<String, String> jMap = JsonUtil.mapifyJson(splitMessage);
 						log.debug("JSON object has " + jMap.size() + " keys");
-						csv.printRecord(marshalToCSV(jMap));
+						csv.printRecord(marshalToCSV(message, jMap));
 					}
 				}
 				else
@@ -191,7 +194,7 @@ public class JsonToFixedCSV extends ServiceImp
 						log.debug("JSON object has another " + map.size() + " keys");
 						jMap.putAll(map);
 					}
-					csv.printRecord(marshalToCSV(jMap));
+					csv.printRecord(marshalToCSV(message, jMap));
 				}
 			}
 		}
@@ -209,14 +212,15 @@ public class JsonToFixedCSV extends ServiceImp
 	/**
 	 * Marshal part of a large JSON array to CSV.
 	 *
+	 *
+	 * @param message
 	 * @param jMap The map of this particular JSON object.
 	 *
 	 * @return The CSV row as a list of Strings.
 	 */
-	private List<String> marshalToCSV(Map<String, String> jMap)
-	{
+	private List<String> marshalToCSV(AdaptrisMessage message, Map<String, String> jMap) throws ServiceException {
 		List<String> record = new ArrayList<>();
-		for (String header : header())
+		for (String header : header(message))
 		{
 			if (jMap.containsKey(header))
 			{
@@ -235,13 +239,18 @@ public class JsonToFixedCSV extends ServiceImp
 	 * being a list in most situations.
 	 *
 	 * @return A list of the header columns.
+	 * @param message
 	 */
-	private List<String> header()
-	{
+	private List<String> header(AdaptrisMessage message) throws ServiceException {
 		List<String> header = new ArrayList<>();
-		for (String column : csvHeader.split(","))
-		{
-			header.add(column);
+		try {
+			for (String column : csvHeader.extract(message).trim().split(","))
+			{
+				header.add(column);
+			}
+		} catch (InterlokException e) {
+			log.error("Failed to access header value", e);
+			throw new ServiceException(e);
 		}
 		return header;
 	}
