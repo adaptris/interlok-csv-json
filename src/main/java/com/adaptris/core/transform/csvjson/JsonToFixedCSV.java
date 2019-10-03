@@ -244,7 +244,7 @@ public class JsonToFixedCSV extends ServiceImp
 	private List<String> header(AdaptrisMessage message) throws ServiceException {
 		List<String> header = new ArrayList<>();
 		try {
-			for (String column : csvHeader.extract(message).trim().split(","))
+			for (String column : csvHeader.extract(message).trim().split(",\\s*"))
 			{
 				header.add(column);
 			}
