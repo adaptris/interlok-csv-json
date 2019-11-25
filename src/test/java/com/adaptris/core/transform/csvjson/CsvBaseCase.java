@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumSet;
-
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.DefaultAdaptrisMessageImp;
@@ -31,6 +30,10 @@ public abstract class CsvBaseCase extends ServiceCase {
   public static final String JSON_ARRAY_INPUT = "[{ \"firstname\":\"alice\", \"lastname\":\"smith\", \"dob\":\"2017-01-01\" },"
           + "{ \"firstname\":\"bob\", \"lastname\":\"smith\", \"dob\":\"2017-01-02\" },"
           + "{ \"firstname\":\"carol\", \"lastname\":\"smith\", \"dob\":\"2017-01-03\" }]";
+
+  public static final String JSON_LINES_INPUT = "{ \"firstname\":\"alice\", \"lastname\":\"smith\", \"dob\":\"2017-01-01\" }\n"
+      + "{ \"firstname\":\"bob\", \"lastname\":\"smith\", \"dob\":\"2017-01-02\" }\n"
+      + "{ \"firstname\":\"carol\", \"lastname\":\"smith\", \"dob\":\"2017-01-03\" }\n";
 
   private Configuration jsonConfig = new Configuration.ConfigurationBuilder().jsonProvider(new JsonSmartJsonProvider())
       .mappingProvider(new JacksonMappingProvider()).options(EnumSet.noneOf(Option.class)).build();
