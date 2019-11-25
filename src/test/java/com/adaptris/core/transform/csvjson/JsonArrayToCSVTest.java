@@ -1,6 +1,7 @@
 package com.adaptris.core.transform.csvjson;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import com.adaptris.core.AdaptrisMessage;
@@ -21,7 +22,7 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
     execute(service, msg);
     System.err.println(msg.getContent());
     try (InputStream in = msg.getInputStream()){
-      List<String> lines = IOUtils.readLines(in);
+      List<String> lines = IOUtils.readLines(in, Charset.defaultCharset());
       assertEquals(4, lines.size());
     }
   }
@@ -33,7 +34,7 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
     execute(service, msg);
     System.err.println(msg.getContent());
     try (InputStream in = msg.getInputStream()){
-      List<String> lines = IOUtils.readLines(in);
+      List<String> lines = IOUtils.readLines(in, Charset.defaultCharset());
       assertEquals(3, lines.size());
     }
   }
