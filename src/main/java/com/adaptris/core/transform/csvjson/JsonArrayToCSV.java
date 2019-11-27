@@ -2,19 +2,18 @@ package com.adaptris.core.transform.csvjson;
 
 import java.util.ArrayList;
 import java.util.Map;
-
+import org.apache.commons.lang3.ObjectUtils;
 import org.supercsv.io.CsvListWriter;
-
 import com.adaptris.annotation.AdapterComponent;
 import com.adaptris.annotation.AdvancedConfig;
 import com.adaptris.annotation.ComponentProfile;
+import com.adaptris.annotation.DisplayOrder;
 import com.adaptris.annotation.InputFieldDefault;
 import com.adaptris.annotation.InputFieldHint;
 import com.adaptris.core.AdaptrisMessage;
-import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.json.JsonUtil;
-import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
+import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
 import com.adaptris.core.util.Args;
 import com.adaptris.core.util.CloseableIterable;
 import com.adaptris.core.util.ExceptionHelper;
@@ -58,8 +57,9 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  *
  */
 @AdapterComponent
-@ComponentProfile(summary = "Transfrom a JSON Array into a CSV", tag = "service,csv,json")
+@ComponentProfile(summary = "Transfrom a JSON Array/JSON Lines document into a CSV", tag = "service,csv,json")
 @XStreamAlias("json-to-csv")
+@DisplayOrder(order = {"includeHeader", "jsonStyle", "preferenceBuilder"})
 public class JsonArrayToCSV extends CSVConverter {
 
   @AdvancedConfig
@@ -67,6 +67,8 @@ public class JsonArrayToCSV extends CSVConverter {
   @InputFieldDefault(value = "true")
   @BooleanExpression
   private String includeHeader;
+  @InputFieldDefault(value = "JSON_ARRAY")
+  private JsonStyle jsonStyle;
 
   public JsonArrayToCSV() {
     super();
@@ -77,12 +79,9 @@ public class JsonArrayToCSV extends CSVConverter {
   public void doService(AdaptrisMessage msg) throws ServiceException {
     try {
       log.trace("Beginning doService in {}", LoggingHelper.friendlyName(this));
-      // Use the already existing LargeJsonArraySplitter, but force it with a default-mf
-      LargeJsonArraySplitter splitter =
-          new LargeJsonArraySplitter().withMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
       boolean first = true;
       try (CsvListWriter csvWriter = new CsvListWriter(msg.getWriter(), getPreferenceBuilder().build());
-          CloseableIterable<AdaptrisMessage> splitMsgs = CloseableIterable.ensureCloseable(splitter.splitMessage(msg))) {
+          CloseableIterable<AdaptrisMessage> splitMsgs = CloseableIterable.ensureCloseable(jsonStyle().createIterator(msg))) {
         for (AdaptrisMessage m : splitMsgs) {
           Map<String, String> json = JsonUtil.mapifyJson(m);
           if (first && includeHeader(msg)) {
@@ -94,7 +93,6 @@ public class JsonArrayToCSV extends CSVConverter {
       }
     } catch (Exception e) {
       throw ExceptionHelper.wrapServiceException(e);
-    } finally {
     }
   }
 
@@ -107,6 +105,29 @@ public class JsonArrayToCSV extends CSVConverter {
   }
 
   private boolean includeHeader(AdaptrisMessage msg){
-    return getIncludeHeader() != null  ? Boolean.valueOf(msg.resolve(getIncludeHeader())) : true;
+    return getIncludeHeader() != null ? Boolean.valueOf(msg.resolve(getIncludeHeader())) : true;
+  }
+
+
+  /**
+   * Specify how the payload is parsed to provide JSON objects.
+   * 
+   * @param p the provider; default is JSON_ARRAY.
+   */
+  public void setJsonStyle(JsonStyle p) {
+    jsonStyle = p;
+  }
+
+  public JsonStyle getJsonStyle() {
+    return jsonStyle;
+  }
+
+  protected JsonStyle jsonStyle() {
+    return ObjectUtils.defaultIfNull(getJsonStyle(), JsonStyle.JSON_ARRAY);
+  }
+
+  public <T extends JsonArrayToCSV> T withJsonStyle(JsonStyle p) {
+    setJsonStyle(p);
+    return (T) this;
   }
 }
