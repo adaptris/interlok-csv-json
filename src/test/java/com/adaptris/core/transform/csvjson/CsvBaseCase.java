@@ -1,10 +1,13 @@
 package com.adaptris.core.transform.csvjson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumSet;
+import org.junit.Test;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.DefaultAdaptrisMessageImp;
@@ -45,14 +48,10 @@ public abstract class CsvBaseCase extends ServiceCase {
     NEVER
   };
 
-
-  public CsvBaseCase(String name) {
-    super(name);
-  }
-
   protected abstract CSVConverter createForTests();
 
 
+  @Test
   public void testPreferenceBuilder() throws Exception {
     CSVConverter service = createForTests();
     assertNotNull(service.getPreferenceBuilder());

@@ -1,16 +1,16 @@
 package com.adaptris.core.transform.csvjson;
 
+import static org.junit.Assert.fail;
+import java.io.IOException;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.CoreException;
 import com.adaptris.core.ServiceCase;
 import com.adaptris.core.services.splitter.json.JsonArraySplitter;
 import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.io.IOException;
 
 public class JsonToFixedCSVTest extends ServiceCase
 {
@@ -24,11 +24,11 @@ public class JsonToFixedCSVTest extends ServiceCase
 	private static final String CSV_OBJECT_HEADER = "object-header.csv";
 	private static final String CSV_OBJECT = "object.csv";
 
-	public JsonToFixedCSVTest()
-	{
-		super("Json to fixed CSV service test");
-	}
-
+    @Override
+    public boolean isAnnotatedForJunit4() {
+      return true;
+    }
+    
 	/**
 	 * Test that a JSON array becomes several lines on CSV,
 	 * and displaying CSV header column names.
