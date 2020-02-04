@@ -144,6 +144,6 @@ public class JsonToFixedCSVTest extends ServiceCase
 	@Override
 	protected Object retrieveObjectForSampleConfig()
 	{
-		return new JsonToFixedCSV();
+		return new JsonToFixedCSV("field1,field2");
 	}
 }
