@@ -3,6 +3,7 @@ package com.adaptris.core.transform.csvjson;
 import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -195,7 +196,7 @@ public class JsonToFixedCSVTest extends ServiceCase {
 
   private String getResource(String resource) throws IOException {
     try (InputStream in = getClass().getResourceAsStream(resource)) {
-      return IOUtils.toString(in, "UTF-8");
+      return IOUtils.toString(in, StandardCharsets.UTF_8);
     }
   }
 
@@ -205,7 +206,7 @@ public class JsonToFixedCSVTest extends ServiceCase {
 
   private List<String> listify(InputStream in) throws IOException {
     try (InputStream tryIn = in) {
-      return IOUtils.readLines(tryIn);
+      return IOUtils.readLines(tryIn, StandardCharsets.UTF_8);
     }
   }
 
