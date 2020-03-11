@@ -5,11 +5,9 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.supercsv.io.CsvMapReader;
 import org.supercsv.prefs.CsvPreference;
 import org.supercsv.util.Util;
-
 import com.adaptris.annotation.AdapterComponent;
 import com.adaptris.annotation.ComponentProfile;
 import com.adaptris.core.AdaptrisMessage;
@@ -20,6 +18,7 @@ import com.adaptris.core.util.LoggingHelper;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import lombok.NoArgsConstructor;
 
 /**
  * Transform a CSV document into a JSON Array.
@@ -51,11 +50,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @AdapterComponent
 @ComponentProfile(summary = "Transfrom CSV into JSON", tag = "service,csv,json")
 @XStreamAlias("csv-to-json")
+@NoArgsConstructor
 public class CSVToJsonArray extends CSVConverter {
-
-  public CSVToJsonArray() {
-    super();
-  }
 
 
   @Override

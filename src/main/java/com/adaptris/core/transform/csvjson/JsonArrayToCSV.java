@@ -13,13 +13,16 @@ import com.adaptris.annotation.InputFieldHint;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.json.JsonUtil;
+import com.adaptris.core.services.splitter.json.JsonProvider.JsonObjectProvider;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
-import com.adaptris.core.util.Args;
 import com.adaptris.core.util.CloseableIterable;
 import com.adaptris.core.util.ExceptionHelper;
 import com.adaptris.core.util.LoggingHelper;
 import com.adaptris.validation.constraints.BooleanExpression;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 /**
@@ -60,20 +63,32 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 @ComponentProfile(summary = "Transfrom a JSON Array/JSON Lines document into a CSV", tag = "service,csv,json")
 @XStreamAlias("json-to-csv")
 @DisplayOrder(order = {"includeHeader", "jsonStyle", "preferenceBuilder"})
+@NoArgsConstructor
 public class JsonArrayToCSV extends CSVConverter {
 
+  /**
+   * Whether or not to emit a header line.
+   * 
+   */
   @AdvancedConfig
   @InputFieldHint(expression = true)
   @InputFieldDefault(value = "true")
   @BooleanExpression
+  @Getter
+  @Setter
   private String includeHeader;
+  /**
+   * Specify how the payload is parsed to provide JSON objects.
+   * 
+   * <p>
+   * The default if not specified is a {@code JSON_ARRAY}
+   * </p>
+   * 
+   */
+  @Getter
+  @Setter
   @InputFieldDefault(value = "JSON_ARRAY")
   private JsonStyle jsonStyle;
-
-  public JsonArrayToCSV() {
-    super();
-  }
-
 
   @Override
   public void doService(AdaptrisMessage msg) throws ServiceException {
@@ -96,38 +111,21 @@ public class JsonArrayToCSV extends CSVConverter {
     }
   }
 
-  public String getIncludeHeader() {
-    return includeHeader;
-  }
-
-  public void setIncludeHeader(String includeHeader) {
-    this.includeHeader = Args.notEmpty(includeHeader, "includeHeader");
-  }
-
-  private boolean includeHeader(AdaptrisMessage msg){
+  protected boolean includeHeader(AdaptrisMessage msg) {
     return getIncludeHeader() != null ? Boolean.valueOf(msg.resolve(getIncludeHeader())) : true;
   }
 
-
-  /**
-   * Specify how the payload is parsed to provide JSON objects.
-   * 
-   * @param p the provider; default is JSON_ARRAY.
-   */
-  public void setJsonStyle(JsonStyle p) {
-    jsonStyle = p;
-  }
-
-  public JsonStyle getJsonStyle() {
-    return jsonStyle;
-  }
-
-  protected JsonStyle jsonStyle() {
+  protected JsonObjectProvider jsonStyle() {
     return ObjectUtils.defaultIfNull(getJsonStyle(), JsonStyle.JSON_ARRAY);
   }
 
   public <T extends JsonArrayToCSV> T withJsonStyle(JsonStyle p) {
     setJsonStyle(p);
+    return (T) this;
+  }
+
+  public <T extends JsonArrayToCSV> T withIncludeHeader(String s) {
+    setIncludeHeader(s);
     return (T) this;
   }
 }

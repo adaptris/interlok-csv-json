@@ -1,9 +1,12 @@
 package com.adaptris.core.transform.csvjson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
+import org.junit.Test;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.ServiceException;
@@ -11,11 +14,11 @@ import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
 import com.jayway.jsonpath.ReadContext;
 
 public class JsonArrayToCSVTest extends CsvBaseCase {
-
-  public JsonArrayToCSVTest(String name) {
-    super(name);
+  @Override
+  public boolean isAnnotatedForJunit4() {
+    return true;
   }
-
+  @Test
   public void testService() throws Exception {
     JsonArrayToCSV service = new JsonArrayToCSV();
     AdaptrisMessage msg = AdaptrisMessageFactory.getDefaultInstance().newMessage(JSON_ARRAY_INPUT);
@@ -27,6 +30,7 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
     }
   }
 
+  @Test
   public void testServiceIncludeHeader() throws Exception {
     JsonArrayToCSV service = new JsonArrayToCSV().withJsonStyle(JsonStyle.JSON_LINES);
     service.setIncludeHeader("false");
@@ -39,6 +43,7 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
     }
   }
 
+  @Test
   public void testServiceRoundTrip() throws Exception {
     JsonArrayToCSV s1 = new JsonArrayToCSV();
     CSVToJsonArray s2 = new CSVToJsonArray();
@@ -54,6 +59,7 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
 
 
 
+  @Test
   public void testBrokenInput() throws Exception {
     JsonArrayToCSV service = createForTests();
     AdaptrisMessage msg = new BrokenMessageFactory(WhenToBreak.INPUT).newMessage(JSON_ARRAY_INPUT);
@@ -65,6 +71,7 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
     }
   }
 
+  @Test
   public void testBrokenOutput() throws Exception {
     JsonArrayToCSV service = createForTests();
     AdaptrisMessage msg = new BrokenMessageFactory(WhenToBreak.OUTPUT).newMessage(JSON_ARRAY_INPUT);

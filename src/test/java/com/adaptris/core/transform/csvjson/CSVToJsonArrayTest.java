@@ -1,16 +1,20 @@
 package com.adaptris.core.transform.csvjson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.ServiceException;
 import com.jayway.jsonpath.ReadContext;
 
 public class CSVToJsonArrayTest extends CsvBaseCase {
-
-  public CSVToJsonArrayTest(String name) {
-    super(name);
+  @Override
+  public boolean isAnnotatedForJunit4() {
+    return true;
   }
-
+  @Test
   public void testService() throws Exception {
     CSVToJsonArray service = new CSVToJsonArray();
     AdaptrisMessage msg = AdaptrisMessageFactory.getDefaultInstance().newMessage(CSV_INPUT);
@@ -24,6 +28,7 @@ public class CSVToJsonArrayTest extends CsvBaseCase {
   }
 
 
+  @Test
   public void testBrokenInput() throws Exception {
     CSVToJsonArray service = createForTests();
     AdaptrisMessage msg = new BrokenMessageFactory(WhenToBreak.INPUT).newMessage(CSV_INPUT);
@@ -35,6 +40,7 @@ public class CSVToJsonArrayTest extends CsvBaseCase {
     }
   }
 
+  @Test
   public void testBrokenOutput() throws Exception {
     CSVToJsonArray service = createForTests();
     AdaptrisMessage msg = new BrokenMessageFactory(WhenToBreak.OUTPUT).newMessage(CSV_INPUT);
