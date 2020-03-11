@@ -95,6 +95,8 @@ configurations {
   all*.exclude group: 'com.google.errorprone', module: 'error_prone_annotations'
   all*.exclude group: 'org.checkerframework', module: 'checker-compat-qual'
   all*.exclude group: 'com.google.findbugs', module: 'jsr305'
+  // INTERLOK-3197 exclude old javax.mail
+  all*.exclude group: 'com.sun.mail', module: 'javax.mail'
 }
 
 configurations.all {
