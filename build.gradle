@@ -6,7 +6,6 @@ plugins {
   id 'com.github.spotbugs' version '4.2.0'
   id "io.freefair.lombok" version "5.1.0"
   id 'org.owasp.dependencycheck' version '5.3.2.1'
-
 }
 
 ext {
@@ -297,6 +296,16 @@ task lgtmCompile(type: JavaCompile, dependsOn: delombok) {
   classpath = project.sourceSets.main.compileClasspath
 }
 
+dependencyCheck  {
+  suppressionFiles= [ "https://raw.githubusercontent.com/adaptris/interlok/develop/gradle/owasp-exclude.xml" ]
+  skipConfigurations = [ "antSql", "spotbugs", "umlDoclet", "offlineJavadocPackages", "javadoc" ]
+  formats = [ "HTML", "JUNIT" ]
+  junitFailOnCVSS = 7.0
+  failBuildOnCVSS = 7.0
+  analyzers {
+    assemblyEnabled=false
+  }
+}
 
 check.dependsOn jacocoTestReport
 javadoc.dependsOn offlinePackageList
