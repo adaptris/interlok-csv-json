@@ -2,38 +2,25 @@ package com.adaptris.core.transform.csvjson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.supercsv.io.CsvListWriter;
 import com.adaptris.annotation.AdapterComponent;
-import com.adaptris.annotation.AdvancedConfig;
 import com.adaptris.annotation.ComponentProfile;
 import com.adaptris.annotation.DisplayOrder;
-import com.adaptris.annotation.InputFieldDefault;
 import com.adaptris.annotation.InputFieldHint;
-import com.adaptris.annotation.Removal;
 import com.adaptris.core.AdaptrisMessage;
-import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.CoreException;
 import com.adaptris.core.ServiceException;
 import com.adaptris.core.json.JsonUtil;
-import com.adaptris.core.services.splitter.LineCountSplitter;
-import com.adaptris.core.services.splitter.MessageSplitterImp;
-import com.adaptris.core.services.splitter.json.JsonArraySplitter;
-import com.adaptris.core.services.splitter.json.JsonObjectSplitter;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonObjectProvider;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
-import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
 import com.adaptris.core.util.Args;
 import com.adaptris.core.util.CloseableIterable;
 import com.adaptris.core.util.ExceptionHelper;
-import com.adaptris.core.util.LoggingHelper;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,21 +39,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class JsonToFixedCSV extends JsonArrayToCSV {
 
-  private transient boolean headerWarning = false;
-  private transient boolean splitterWarning = false;
-
-  private static final Map<Class, JsonStyle> SPLITTER_STYLE;
-
-  static {
-    // Map the supported splitters into the various possible styles.
-    Map<Class, JsonStyle> map = new HashMap<>();
-    map.put(JsonArraySplitter.class, JsonStyle.JSON_ARRAY);
-    map.put(LargeJsonArraySplitter.class, JsonStyle.JSON_ARRAY);
-    map.put(JsonObjectSplitter.class, JsonStyle.JSON_OBJECT);
-    map.put(LineCountSplitter.class, JsonStyle.JSON_LINES);
-    SPLITTER_STYLE = Collections.unmodifiableMap(map);
-  }
-
   /**
    * The CSV Header.
    * 
@@ -77,29 +49,6 @@ public class JsonToFixedCSV extends JsonArrayToCSV {
   @Setter
   private String csvHeader = "";
 
-  /**
-   * Whether or not to emit the header in the resulting document.
-   * 
-   */
-  @Valid
-  @InputFieldDefault(value = "true")
-  @Getter
-  @Setter
-  @Deprecated
-  @Removal(version = "3.11", message = "use include-header instead")
-  private Boolean showHeader;
-
-  /**
-   * The splitter used to generate each CSV row.
-   */
-  @Valid
-  @Getter
-  @Setter
-  @AdvancedConfig(rare = true)
-  @Deprecated
-  @Removal(version = "3.11.0", message = "Use JsonStyle instead")
-  private MessageSplitterImp messageSplitter = null;
-
   public JsonToFixedCSV(String hdrs) {
     this();
     setCsvHeader(hdrs);
@@ -107,13 +56,6 @@ public class JsonToFixedCSV extends JsonArrayToCSV {
   
   @Override
   protected boolean includeHeader(AdaptrisMessage msg) {
-    if (getShowHeader() != null) {
-      LoggingHelper.logWarning(headerWarning, () -> {
-        headerWarning = true;
-      }, "show-headers is deprecated, use include-header instead");
-      return BooleanUtils.toBooleanDefaultIfNull(getShowHeader(), true);
-
-    }
     return super.includeHeader(msg);
   }
 
@@ -194,21 +136,6 @@ public class JsonToFixedCSV extends JsonArrayToCSV {
   // interface
   @Override
   protected JsonObjectProvider jsonStyle() {
-    if (getMessageSplitter() != null) {
-      LoggingHelper.logWarning(splitterWarning, () -> {
-        splitterWarning = true;
-      }, "message-splitter is deprecated, use a JsonStyle instead");
-      JsonObjectProvider style = SPLITTER_STYLE.get(getMessageSplitter().getClass());
-      // Might be a LargeJsonArrayPathSplitter (crazy talk if you ask me).
-      if (style == null) {
-        style = (msg) -> {
-          MessageSplitterImp imp = getMessageSplitter();
-          imp.setMessageFactory(AdaptrisMessageFactory.getDefaultInstance());
-          return CloseableIterable.ensureCloseable(imp.splitMessage(msg));
-        };
-      }
-      return Args.notNull(style, "json style");
-    }
     return ObjectUtils.defaultIfNull(getJsonStyle(), JsonStyle.JSON_ARRAY);
   }
 
