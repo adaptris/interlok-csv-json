@@ -9,6 +9,7 @@ import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.ServiceException;
 import com.jayway.jsonpath.ReadContext;
 
+@SuppressWarnings("deprecation")
 public class CSVToJsonArrayTest extends CsvBaseCase {
   @Override
   public boolean isAnnotatedForJunit4() {
