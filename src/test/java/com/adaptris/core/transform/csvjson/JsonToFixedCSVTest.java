@@ -12,12 +12,7 @@ import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.CoreException;
 import com.adaptris.core.ServiceCase;
-import com.adaptris.core.common.ConstantDataInputParameter;
-import com.adaptris.core.services.splitter.json.JsonArraySplitter;
-import com.adaptris.core.services.splitter.json.JsonObjectSplitter;
-import com.adaptris.core.services.splitter.json.JsonPathSplitter;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
-import com.adaptris.core.services.splitter.json.LargeJsonArraySplitter;
 import com.adaptris.csv.BasicPreferenceBuilder;
 import com.adaptris.csv.BasicPreferenceBuilder.Style;
 
@@ -49,22 +44,6 @@ public class JsonToFixedCSVTest extends ServiceCase {
     return true;
   }
 
-  /**
-   * Test that a JSON array becomes several lines on CSV, and displaying CSV header column names.
-   *
-   * @throws Exception
-   */
-  @Test
-  public void testArrayWithHeader_WithSplitter() throws Exception {
-    AdaptrisMessage message = getMessage(JSON_ARRAY);
-    JsonToFixedCSV service = buildService(true, CSV_HEADER);
-    service.setMessageSplitter(new LargeJsonArraySplitter());
-
-    execute(service, message);
-
-    Assert.assertEquals(LargeJsonArraySplitter.class, service.getMessageSplitter().getClass());
-    Assert.assertEquals(asList(CSV_ARRAY_HEADER), listify(message.getInputStream()));
-  }
 
   @Test
   public void testArrayWithHeader() throws Exception {
@@ -91,17 +70,6 @@ public class JsonToFixedCSVTest extends ServiceCase {
     Assert.assertEquals(asList(CSV_ARRAY), listify(message.getInputStream()));
   }
 
-  @Test
-  public void testArrayNoHeader_WithSplitter() throws Exception {
-    AdaptrisMessage message = getMessage(JSON_ARRAY);
-    JsonToFixedCSV service = buildService(false, CSV_HEADER);
-    service.setMessageSplitter(new JsonArraySplitter());
-
-    execute(service, message);
-
-    Assert.assertEquals(asList(CSV_ARRAY), listify(message.getInputStream()));
-  }
-
 
   /**
    * Test that a JSON object becomes CSV data, and displaying CSV header column names.
@@ -118,17 +86,6 @@ public class JsonToFixedCSVTest extends ServiceCase {
     execute(service, message);
 
     System.err.println(message.getContent());
-    Assert.assertEquals(asList(CSV_OBJECT_HEADER), listify(message.getInputStream()));
-  }
-
-  @Test
-  public void testObjectWithHeader_WithSplitter() throws Exception {
-    AdaptrisMessage message = getMessage(JSON_OBJECT);
-    JsonToFixedCSV service = buildService(true, CSV_HEADER);
-    service.setMessageSplitter(new JsonObjectSplitter());
-
-    execute(service, message);
-
     Assert.assertEquals(asList(CSV_OBJECT_HEADER), listify(message.getInputStream()));
   }
 
@@ -156,20 +113,6 @@ public class JsonToFixedCSVTest extends ServiceCase {
         .withJsonStyle(JsonStyle.JSON_LINES);
     execute(service, message);
     Assert.assertEquals(asList(CSV_JSON_LINES), listify(message.getInputStream()));
-  }
-
-  @Test
-  // Special case with an "unsupported splitter"...
-  public void testJsonArrayPath() throws Exception {
-    AdaptrisMessage message = getMessage(JSON_ARRAY_PATH);
-    JsonToFixedCSV service = buildService(true, CSV_HEADER);
-    JsonPathSplitter splitter = new JsonPathSplitter();
-    splitter.setJsonPath(new ConstantDataInputParameter(JSON_ARRAY_PATH_JSONPATH));
-    service.setMessageSplitter(splitter);
-
-    execute(service, message);
-
-    Assert.assertEquals(asList(CSV_JSON_ARRAY_PATH), listify(message.getInputStream()));
   }
 
   /**
@@ -212,7 +155,7 @@ public class JsonToFixedCSVTest extends ServiceCase {
 
   private JsonToFixedCSV buildService(boolean showHeader, String header) {
     JsonToFixedCSV service = new JsonToFixedCSV();
-    service.setShowHeader(showHeader);
+    service.setIncludeHeader(String.valueOf(showHeader));
     service.setCsvHeader(header);
     return service;
   }
