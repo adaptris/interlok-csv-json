@@ -1,6 +1,6 @@
 package com.adaptris.core.transform.csvjson;
 
-import com.adaptris.annotation.Removal;
+import com.adaptris.validation.constraints.ConfigDeprecated;
 import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.CoreException;
 import com.adaptris.core.ServiceException;
@@ -13,7 +13,7 @@ import com.adaptris.core.util.LoggingHelper;
  *             {@link CSVToJson} instead.
  */
 @Deprecated
-@Removal(version = "4.0.0")
+@ConfigDeprecated(removalVersion = "4.0.0", groups = Deprecated.class)
 public class CSVToJsonArray extends CSVConverter {
 
   private transient boolean warningLogged = false;
