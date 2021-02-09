@@ -9,8 +9,8 @@ plugins {
 }
 
 ext {
-  interlokCoreVersion = project.hasProperty('interlokCoreVersion') ? project.getProperty('interlokCoreVersion') : '3.12-SNAPSHOT'
-  releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '3.12-SNAPSHOT'
+  interlokCoreVersion = project.hasProperty('interlokCoreVersion') ? project.getProperty('interlokCoreVersion') : '4.0-SNAPSHOT'
+  releaseVersion = project.hasProperty('releaseVersion') ? project.getProperty('releaseVersion') : '4.0-SNAPSHOT'
   nexusBaseUrl = project.hasProperty('nexusBaseUrl') ? project.getProperty('nexusBaseUrl') : 'https://nexus.adaptris.net/nexus'
   mavenPublishUrl = project.hasProperty('mavenPublishUrl') ? project.getProperty('mavenPublishUrl') : nexusBaseUrl + '/content/repositories/snapshots'
   javadocsBaseUrl = nexusBaseUrl + "/content/sites/javadocs/com/adaptris"
@@ -59,8 +59,8 @@ ext.buildInfo = { ->
     }
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 group   = 'com.adaptris'
 version = releaseVersion
 def versionDir = "$buildDir/version"
@@ -73,7 +73,6 @@ repositories {
   maven { url "$nexusBaseUrl/content/groups/public" }
   maven { url "$nexusBaseUrl/content/groups/interlok" }
 }
-
 
 configurations {
   javadoc {}
@@ -123,17 +122,13 @@ dependencies {
     exclude group: "org.apache.logging.log4j"
   }
 
-
   javadoc("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
   offlineJavadocPackages ("com.adaptris:interlok-core:$interlokCoreVersion:javadoc@jar") { changing= true}
   offlineJavadocPackages ("com.adaptris:interlok-common:$interlokCoreVersion:javadoc@jar") { changing= true}
   offlineJavadocPackages ("com.adaptris:interlok-stax:$interlokCoreVersion:javadoc@jar") { changing= true}
   offlineJavadocPackages ("com.adaptris:interlok-csv:$interlokCoreVersion:javadoc@jar") { changing= true}
   offlineJavadocPackages ("com.adaptris:interlok-json:$interlokCoreVersion:javadoc@jar") { changing= true}
-
-
 }
-
 
 jar {
   manifest {
@@ -145,7 +140,6 @@ jar {
                "Implementation-Vendor": organizationName)
   }
 }
-
 
 sourceSets {
   main {
@@ -178,7 +172,12 @@ task offlinePackageList(type: Copy) {
     }
   }
   include "package-list"
+  include "element-list"
   into offlineJavadocPackageDir
+}
+
+ext.hasGraphViz = { ->
+  return false
 }
 
 javadoc {
@@ -190,6 +189,7 @@ javadoc {
     options.linksOffline(interlokJsonJavadocs, offlineJavadocPackageDir.getCanonicalPath() + "/interlok-json-$interlokCoreVersion-javadoc.jar")
     taglets = ["com.adaptris.taglet.ConfigTaglet", "com.adaptris.taglet.LicenseTaglet"]
     options.addStringOption "tagletpath", configurations.javadoc.asPath
+    options.addBooleanOption "-no-module-directories", true
   }
 }
 
@@ -214,7 +214,6 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.extensions.delombokTask
 }
-
 
 artifacts {
   archives javadocJar
