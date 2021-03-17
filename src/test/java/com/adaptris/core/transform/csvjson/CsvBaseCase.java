@@ -12,9 +12,9 @@ import com.adaptris.core.AdaptrisMessage;
 import com.adaptris.core.AdaptrisMessageFactory;
 import com.adaptris.core.DefaultAdaptrisMessageImp;
 import com.adaptris.core.DefaultMessageFactory;
-import com.adaptris.core.ServiceCase;
 import com.adaptris.csv.BasicPreferenceBuilder;
 import com.adaptris.csv.CustomPreferenceBuilder;
+import com.adaptris.interlok.junit.scaffolding.services.ExampleServiceCase;
 import com.adaptris.util.IdGenerator;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -23,11 +23,11 @@ import com.jayway.jsonpath.ReadContext;
 import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 
-public abstract class CsvBaseCase extends ServiceCase {
+public abstract class CsvBaseCase extends ExampleServiceCase {
 
-  public static final String CSV_INPUT = "firstname,lastname,dob\r\n" + 
-      "\"alice\",\"smith\",\"2017-01-01\"\r\n" + 
-      "\"bob\", \"smith\",\"2017-01-02\"\r\n" + 
+  public static final String CSV_INPUT = "firstname,lastname,dob\r\n" +
+      "\"alice\",\"smith\",\"2017-01-01\"\r\n" +
+      "\"bob\", \"smith\",\"2017-01-02\"\r\n" +
       "\"carol\",\"smith\",\"2017-01-03\"";
 
   public static final String JSON_ARRAY_INPUT = "[{ \"firstname\":\"alice\", \"lastname\":\"smith\", \"dob\":\"2017-01-01\" },"
@@ -78,7 +78,7 @@ public abstract class CsvBaseCase extends ServiceCase {
     private WhenToBreak when;
 
     public BrokenMessageFactory(WhenToBreak w) {
-      this.when = w;
+      when = w;
     }
 
     @Override

@@ -14,10 +14,7 @@ import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
 import com.jayway.jsonpath.ReadContext;
 
 public class JsonArrayToCSVTest extends CsvBaseCase {
-  @Override
-  public boolean isAnnotatedForJunit4() {
-    return true;
-  }
+
   @Test
   public void testService() throws Exception {
     JsonArrayToCSV service = new JsonArrayToCSV();
@@ -46,7 +43,7 @@ public class JsonArrayToCSVTest extends CsvBaseCase {
   @Test
   public void testServiceRoundTrip() throws Exception {
     JsonArrayToCSV s1 = new JsonArrayToCSV();
-    CSVToJsonArray s2 = new CSVToJsonArray();
+    CSVToJson s2 = new CSVToJson();
     AdaptrisMessage msg = AdaptrisMessageFactory.getDefaultInstance().newMessage(JSON_ARRAY_INPUT);
     execute(s1, msg);
     execute(s2, msg);

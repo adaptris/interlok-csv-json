@@ -15,9 +15,9 @@ import com.adaptris.core.ServiceException;
 import com.adaptris.core.json.JsonUtil;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonObjectProvider;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
-import com.adaptris.core.util.CloseableIterable;
 import com.adaptris.core.util.ExceptionHelper;
 import com.adaptris.core.util.LoggingHelper;
+import com.adaptris.interlok.util.CloseableIterable;
 import com.adaptris.validation.constraints.BooleanExpression;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import lombok.Getter;
@@ -27,11 +27,11 @@ import lombok.Setter;
 
 /**
  * Transfrom a JSON array into a CSV.
- * 
+ *
  * <p>
  * Takes a JSON array and renders it as a CSV document:
  * <pre>
- * {@code 
+ * {@code
  * [
  *   { "firstname":"alice", "lastname":"smith", "dob":"2017-01-01" },
  *   { "firstname":"bob", "lastname":"smith", "dob":"2017-01-02" },
@@ -55,7 +55,7 @@ import lombok.Setter;
  * </p>
  * *
  * </p>
- * 
+ *
  * @config json-to-csv
  *
  */
@@ -68,7 +68,7 @@ public class JsonArrayToCSV extends CSVConverter {
 
   /**
    * Whether or not to emit a header line.
-   * 
+   *
    */
   @AdvancedConfig
   @InputFieldHint(expression = true)
@@ -79,11 +79,11 @@ public class JsonArrayToCSV extends CSVConverter {
   private String includeHeader;
   /**
    * Specify how the payload is parsed to provide JSON objects.
-   * 
+   *
    * <p>
    * The default if not specified is a {@code JSON_ARRAY}
    * </p>
-   * 
+   *
    */
   @Getter
   @Setter
