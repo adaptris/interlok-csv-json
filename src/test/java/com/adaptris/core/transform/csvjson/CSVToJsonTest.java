@@ -18,10 +18,6 @@ import com.adaptris.interlok.util.CloseableIterable;
 import com.jayway.jsonpath.ReadContext;
 
 public class CSVToJsonTest extends CsvBaseCase {
-  @Override
-  public boolean isAnnotatedForJunit4() {
-    return true;
-  }
 
   @Test
   public void testService_Lines() throws Exception {

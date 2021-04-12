@@ -19,8 +19,8 @@ import com.adaptris.core.json.JsonUtil;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonObjectProvider;
 import com.adaptris.core.services.splitter.json.JsonProvider.JsonStyle;
 import com.adaptris.core.util.Args;
-import com.adaptris.core.util.CloseableIterable;
 import com.adaptris.core.util.ExceptionHelper;
+import com.adaptris.interlok.util.CloseableIterable;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,9 +28,9 @@ import lombok.Setter;
 
 /**
  * Transfrom a JSON array into a CSV with only the specified fields.
- * 
+ *
  * @config json-to-fixed-csv-service
- * 
+ *
  */
 @XStreamAlias("json-to-fixed-csv-service")
 @AdapterComponent
@@ -41,7 +41,7 @@ public class JsonToFixedCSV extends JsonArrayToCSV {
 
   /**
    * The CSV Header.
-   * 
+   *
    */
   @NotBlank
   @InputFieldHint(expression = true)
@@ -53,7 +53,7 @@ public class JsonToFixedCSV extends JsonArrayToCSV {
     this();
     setCsvHeader(hdrs);
   }
-  
+
   @Override
   protected boolean includeHeader(AdaptrisMessage msg) {
     return super.includeHeader(msg);
