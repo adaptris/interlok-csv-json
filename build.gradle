@@ -2,14 +2,14 @@ plugins {
   id 'java-library'
   id 'maven-publish'
   id 'jacoco'
-  id 'com.github.spotbugs' version '4.7.2'
-  id "io.freefair.lombok" version "5.3.3.3"
-  id 'org.owasp.dependencycheck' version '6.2.2'
+  id 'com.github.spotbugs' version '4.7.9'
+  id "io.freefair.lombok" version "6.2.0"
+  id 'org.owasp.dependencycheck' version '6.5.0.1'
 }
 
 ext {
-  interlokCoreVersion = project.findProperty('interlokCoreVersion') ?: '4.2-SNAPSHOT'
-  releaseVersion = project.findProperty('releaseVersion') ?: '4.2-SNAPSHOT'
+  interlokCoreVersion = project.findProperty('interlokCoreVersion') ?: '4.3-SNAPSHOT'
+  releaseVersion = project.findProperty('releaseVersion') ?: '4.3-SNAPSHOT'
   nexusBaseUrl = project.findProperty('nexusBaseUrl') ?: 'https://nexus.adaptris.net/nexus'
   mavenPublishUrl = project.findProperty('mavenPublishUrl') ?: nexusBaseUrl + '/content/repositories/snapshots'
   javadocsBaseUrl = nexusBaseUrl + "/content/sites/javadocs/com/adaptris"
@@ -58,7 +58,7 @@ targetCompatibility = JavaVersion.VERSION_11
 group   = 'com.adaptris'
 version = releaseVersion
 def versionDir = "$buildDir/version"
-generateLombokConfig.enabled = false
+lombok.disableConfig = true
 
 // Disable gradle module generation since we probably don't want
 // xxx.module files in your repository.
@@ -127,7 +127,7 @@ dependencies {
   implementation ("org.slf4j:slf4j-api:$slf4jVersion")
   api ("com.adaptris:interlok-csv:$interlokCoreVersion") { changing=true}
   api ("com.adaptris:interlok-json:$interlokCoreVersion") { changing=true}
-  api ("com.fasterxml.jackson.core:jackson-databind:2.12.4")
+  api ("com.fasterxml.jackson.core:jackson-databind:2.13.0")
 
   annotationProcessor ("com.adaptris:interlok-core-apt:$interlokCoreVersion") { changing= true}
   testImplementation ('junit:junit:4.13.2')
