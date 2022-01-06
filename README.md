@@ -4,3 +4,9 @@
 
 * CSV to JSON
 * JSON to CSV
+
+# Archived
+
+This interlok-csv-json project has been moved and therefore this project is archived.
+
+You will find interlok-csv-json in the multi module project https://github.com/adaptris/interlok-csv
